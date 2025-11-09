@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Jogo da Forca - Web</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <!-- Cabeçalho -->
+        <div class="row mb-4">
+            <div class="col text-center">
+                <h1 class="display-4 text-primary">
+                    <i class="fas fa-gamepad me-3"></i>Jogo da Forca
+                </h1>
+                <p class="lead">Adivinhe a palavra relacionada à programação!</p>
+            </div>
+        </div>
+
+        <!-- Tela de Início -->
+        <div id="start-screen" class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-body text-center p-5">
+                        <i class="fas fa-keyboard fa-5x text-primary mb-4"></i>
+                        <h3 class="card-title mb-4">Comece a Jogar</h3>
+                        
+                        <div class="mb-3">
+                            <label for="playerName" class="form-label">Seu Nome:</label>
+                            <input type="text" class="form-control form-control-lg" id="playerName" 
+                                   placeholder="Digite seu nome" value="Jogador">
+                        </div>
+                        
+                        <button id="startBtn" class="btn btn-primary btn-lg w-100">
+                            <i class="fas fa-play me-2"></i>Iniciar Jogo
+                        </button>
+                        
+                        <div class="mt-4">
+                            <button id="showScores" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-trophy me-1"></i>Ver Placar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tela do Jogo -->
+        <div id="game-screen" class="row d-none">
+            <div class="col-md-8">
+                <!-- Forca -->
+                <div class="card shadow mb-4">
+                    <div class="card-body text-center">
+                        <div id="hangman-display" class="hangman-stage">
+                            <!-- Arte ASCII da forca será renderizada aqui -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Palavra -->
+                <div class="card shadow mb-4">
+                    <div class="card-body text-center">
+                        <h4 id="word-display" class="display-6 letter-spacing">
+                            <!-- Letras da palavra aparecerão aqui -->
+                        </h4>
+                    </div>
+                </div>
+
+                <!-- Teclado Virtual -->
+                <div class="card shadow">
+                    <div class="card-body">
+                        <div id="virtual-keyboard" class="keyboard">
+                            <!-- Teclado será gerado via JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <!-- Informações do Jogo -->
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <i class="fas fa-info-circle me-2"></i>Informações
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <strong>Jogador:</strong> <span id="player-info">-</span>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Erros:</strong> 
+                            <span id="errors">0</span>/<span id="max-errors">6</span>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Letras Usadas:</strong>
+                            <div id="used-letters" class="mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controles -->
+                <div class="card shadow">
+                    <div class="card-body text-center">
+                        <button id="new-game-btn" class="btn btn-warning mb-2">
+                            <i class="fas fa-redo me-2"></i>Novo Jogo
+                        </button>
+                        <button id="quit-game" class="btn btn-outline-danger">
+                            <i class="fas fa-sign-out-alt me-2"></i>Sair
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Placar -->
+        <div class="modal fade" id="scoresModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-trophy me-2"></i>Placar
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="scores-list">
+                            <!-- Lista de scores será carregada aqui -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Fim de Jogo -->
+        <div class="modal fade" id="gameOverModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="gameOverTitle">Fim de Jogo</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <i id="gameOverIcon" class="fas fa-5x mb-3"></i>
+                        <h4 id="gameOverMessage"></h4>
+                        <p id="correctWord" class="text-muted"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="playAgainBtn" class="btn btn-primary">
+                            <i class="fas fa-redo me-2"></i>Jogar Novamente
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>

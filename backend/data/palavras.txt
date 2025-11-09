@@ -1,0 +1,15 @@
+python
+programacao
+computador
+algoritmo
+variavel
+funcao
+classe
+objeto
+heranca
+polimorfismo
+dicionario
+lista
+tupla
+string
+inteiro
