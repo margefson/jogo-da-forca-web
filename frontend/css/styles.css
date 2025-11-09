@@ -1,0 +1,373 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 30px;
+    align-items: start;
+}
+
+.game-area {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    backdrop-filter: blur(10px);
+}
+
+.sidebar {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    backdrop-filter: blur(10px);
+}
+
+h1 {
+    text-align: center;
+    color: #2d3748;
+    margin-bottom: 10px;
+    font-size: 2.5em;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+    text-align: center;
+    color: #718096;
+    margin-bottom: 30px;
+    font-size: 1.1em;
+}
+
+.game-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    background: #f7fafc;
+    padding: 15px;
+    border-radius: 12px;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #667eea;
+}
+
+.stat-label {
+    font-size: 0.9em;
+    color: #718096;
+    margin-top: 5px;
+}
+
+.anatomy-progress {
+    margin: 20px 0;
+}
+
+.progress-stages {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.stage-indicator {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8em;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.stage-indicator.active {
+    background: #667eea;
+    color: white;
+    transform: scale(1.1);
+}
+
+.hangman-container {
+    position: relative;
+    height: 300px;
+    margin: 30px 0;
+    background: #f8f9fa;
+    border-radius: 15px;
+    border: 3px dashed #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.anatomy-stage {
+    font-size: 5em;
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.1));
+}
+
+.word-display {
+    text-align: center;
+    margin: 40px 0;
+    font-size: 2.5em;
+    letter-spacing: 0.2em;
+    font-weight: 300;
+}
+
+.letter {
+    display: inline-block;
+    margin: 0 8px;
+    padding-bottom: 5px;
+    border-bottom: 3px solid #667eea;
+    min-width: 40px;
+    text-transform: uppercase;
+}
+
+.keyboard {
+    display: grid;
+    grid-template-columns: repeat(13, 1fr);
+    gap: 8px;
+    margin-top: 30px;
+}
+
+.key {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px 5px;
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    user-select: none;
+}
+
+.key:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+    transform: translateY(-2px);
+}
+
+.key.used {
+    background: #cbd5e0;
+    color: #718096;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.key.used.correct {
+    background: #48bb78;
+    color: white;
+    border-color: #48bb78;
+}
+
+.key.used.wrong {
+    background: #f56565;
+    color: white;
+    border-color: #f56565;
+}
+
+.controls {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.btn {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1em;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.btn-secondary {
+    background: #e2e8f0;
+    color: #4a5568;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.category-selector {
+    margin-bottom: 25px;
+}
+
+.category-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.category-btn {
+    padding: 10px 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9em;
+}
+
+.category-btn.active {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.instructions {
+    background: #edf2f7;
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: 25px;
+}
+
+.instructions h3 {
+    color: #2d3748;
+    margin-bottom: 10px;
+}
+
+.instructions ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.instructions li {
+    margin-bottom: 8px;
+    padding-left: 20px;
+    position: relative;
+}
+
+.instructions li:before {
+    content: "•";
+    color: #667eea;
+    position: absolute;
+    left: 0;
+}
+
+.word-list {
+    margin-top: 25px;
+}
+
+.word-list h3 {
+    color: #2d3748;
+    margin-bottom: 10px;
+}
+
+#wordList div {
+    padding: 8px;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 0.9em;
+}
+
+.game-over {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.game-over-content {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    max-width: 500px;
+    width: 90%;
+}
+
+.game-over h2 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+}
+
+.win { 
+    color: #48bb78; 
+}
+
+.lose { 
+    color: #f56565; 
+}
+
+@media (max-width: 768px) {
+    .container {
+        grid-template-columns: 1fr;
+    }
+    
+    .keyboard {
+        grid-template-columns: repeat(9, 1fr);
+    }
+    
+    .word-display {
+        font-size: 1.8em;
+    }
+    
+    .anatomy-stage {
+        font-size: 3em;
+    }
+    
+    .game-stats {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    /* Mantenha o mesmo CSS excelente que você tinha, apenas adicione: */
+
+.anatomy-stage img {
+    max-width: 100%;
+    height: auto;
+    transition: all 0.3s ease;
+}
+
+/* Garantir que as imagens se ajustem ao container */
+.hangman-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.hangman-container img {
+    max-height: 250px;
+    object-fit: contain;
+}
+}

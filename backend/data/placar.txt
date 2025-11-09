@@ -1,1 +1,7 @@
 Raphael: 16
+Jogador1,450
+Jogador2,380
+Jogador3,290
+Ana,520
+Carlos,410
+Maria,600

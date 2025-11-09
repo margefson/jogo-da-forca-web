@@ -1,291 +1,154 @@
-class HangmanWeb {
+// Frontend Game Controller
+class GameController {
     constructor() {
-        this.apiBase = 'http://localhost:5000/api';
-        this.currentSession = null;
-        this.gameState = null;
-        
-        this.initializeEventListeners();
-        this.loadScores();
+        this.baseURL = 'http://localhost:5000/api';
+        this.currentCategory = 'Anatomia';
+        this.isInitialized = false;
     }
-    
-    initializeEventListeners() {
-        // Botões da tela inicial
-        document.getElementById('startBtn').addEventListener('click', () => this.startGame());
-        document.getElementById('showScores').addEventListener('click', () => this.showScores());
-        
-        // Controles do jogo
-        document.getElementById('new-game-btn').addEventListener('click', () => this.startGame());
-        document.getElementById('quit-game').addEventListener('click', () => this.showStartScreen());
-        document.getElementById('playAgainBtn').addEventListener('click', () => this.startGame());
-        
-        // Teclado físico
-        document.addEventListener('keydown', (e) => this.handlePhysicalKeyboard(e));
-    }
-    
-    async startGame() {
-        const playerName = document.getElementById('playerName').value || 'Jogador';
-        
+
+    async init() {
         try {
-            const response = await fetch(`${this.apiBase}/new-game`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ player_name: playerName })
-            });
+            console.log("Inicializando controlador...");
             
-            if (!response.ok) throw new Error('Erro ao iniciar jogo');
+            // Testa a conexão com o servidor primeiro
+            await this.healthCheck();
             
-            this.currentSession = await response.json();
-            this.showGameScreen();
-            this.initializeGame();
+            // Carrega categorias disponíveis
+            const categories = await this.getCategories();
+            console.log("Categorias disponíveis:", categories);
             
-        } catch (error) {
-            console.error('Erro:', error);
-            alert('Erro ao conectar com o servidor');
-        }
-    }
-    
-    showGameScreen() {
-        document.getElementById('start-screen').classList.add('d-none');
-        document.getElementById('game-screen').classList.remove('d-none');
-    }
-    
-    showStartScreen() {
-        document.getElementById('start-screen').classList.remove('d-none');
-        document.getElementById('game-screen').classList.add('d-none');
-    }
-    
-    initializeGame() {
-        this.createVirtualKeyboard();
-        this.updatePlayerInfo();
-        this.updateHangmanDisplay(0);
-        this.updateWordDisplay(Array(this.currentSession.word_length).fill('_'));
-    }
-    
-    createVirtualKeyboard() {
-        const keyboard = document.getElementById('virtual-keyboard');
-        const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
-        
-        keyboard.innerHTML = letters.map(letter => `
-            <button class="btn key-btn" data-letter="${letter}">
-                ${letter.toUpperCase()}
-            </button>
-        `).join('');
-        
-        // Adiciona event listeners aos botões do teclado virtual
-        keyboard.querySelectorAll('.key-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                this.makeGuess(e.target.dataset.letter);
-            });
-        });
-    }
-    
-    async makeGuess(letter) {
-        if (!this.currentSession) return;
-        
-        try {
-            const response = await fetch(`${this.apiBase}/guess`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    session_id: this.currentSession.session_id,
-                    letter: letter
-                })
-            });
-            
-            if (!response.ok) throw new Error('Erro ao fazer tentativa');
-            
-            const result = await response.json();
-            
-            if (result.error) {
-                alert(result.error);
-                return;
+            if (categories.length > 0) {
+                this.currentCategory = categories[0];
             }
             
-            this.updateGameState(result);
+            this.isInitialized = true;
+            console.log("Controlador inicializado com sucesso");
+            return true;
             
         } catch (error) {
-            console.error('Erro:', error);
+            console.error('Erro na inicialização do controlador:', error);
+            this.isInitialized = false;
+            return false;
         }
     }
-    
-    updateGameState(gameState) {
-        this.gameState = gameState;
-        
-        // Atualiza interface
-        this.updateHangmanDisplay(gameState.errors);
-        this.updateWordDisplay(gameState.word_state);
-        this.updateUsedLetters(gameState.used_letters);
-        this.updateKeyboard(gameState.used_letters, gameState.correct_letters);
-        
-        // Verifica fim de jogo
-        if (gameState.game_over) {
-            this.showGameOver(gameState.won, gameState.correct_word);
-        }
-    }
-    
-    updateHangmanDisplay(errors) {
-        const hangmanStages = [
-            `⠀
-               -----
-               |   |
-                   |
-                   |
-                   |
-                   |
-            =========`,
-            `⠀
-               -----
-               |   |
-               O   |
-                   |
-                   |
-                   |
-            =========`,
-            `⠀
-               -----
-               |   |
-               O   |
-               |   |
-                   |
-                   |
-            =========`,
-            `⠀
-               -----
-               |   |
-               O   |
-              /|   |
-                   |
-                   |
-            =========`,
-            `⠀
-               -----
-               |   |
-               O   |
-              /|\\  |
-                   |
-                   |
-            =========`,
-            `⠀
-               -----
-               |   |
-               O   |
-              /|\\  |
-              /    |
-                   |
-            =========`,
-            `⠀
-               -----
-               |   |
-               O   |
-              /|\\  |
-              / \\  |
-                   |
-            =========`
-        ];
-        
-        document.getElementById('hangman-display').textContent = hangmanStages[errors];
-        document.getElementById('errors').textContent = errors;
-    }
-    
-    updateWordDisplay(wordState) {
-        const wordDisplay = wordState.join(' ');
-        document.getElementById('word-display').textContent = wordDisplay;
-    }
-    
-    updateUsedLetters(usedLetters) {
-        const usedLettersDiv = document.getElementById('used-letters');
-        if (usedLetters && usedLetters.length > 0) {
-            usedLettersDiv.innerHTML = usedLetters.map(letter => 
-                `<span class="used-letter">${letter.toUpperCase()}</span>`
-            ).join('');
-        } else {
-            usedLettersDiv.innerHTML = '<em>Nenhuma letra usada ainda</em>';
-        }
-    }
-    
-    updateKeyboard(usedLetters = [], correctLetters = []) {
-        document.querySelectorAll('.key-btn').forEach(btn => {
-            const letter = btn.dataset.letter;
-            
-            if (usedLetters.includes(letter)) {
-                btn.disabled = true;
-                if (correctLetters.includes(letter)) {
-                    btn.classList.add('correct');
-                } else {
-                    btn.classList.add('incorrect');
-                }
-            } else {
-                btn.disabled = false;
-                btn.classList.remove('correct', 'incorrect');
-            }
-        });
-    }
-    
-    showGameOver(won, correctWord) {
-        const modal = new bootstrap.Modal(document.getElementById('gameOverModal'));
-        const title = document.getElementById('gameOverTitle');
-        const icon = document.getElementById('gameOverIcon');
-        const message = document.getElementById('gameOverMessage');
-        const correctWordEl = document.getElementById('correctWord');
-        
-        if (won) {
-            title.textContent = 'Parabéns! 🎉';
-            icon.className = 'fas fa-trophy text-success';
-            message.textContent = 'Você venceu!';
-        } else {
-            title.textContent = 'Fim de Jogo 💀';
-            icon.className = 'fas fa-skull-crossbones text-danger';
-            message.textContent = 'A forca está completa!';
-        }
-        
-        correctWordEl.textContent = `Palavra correta: ${correctWord}`;
-        modal.show();
-    }
-    
-    async loadScores() {
+
+    async healthCheck() {
         try {
-            const response = await fetch(`${this.apiBase}/scores`);
+            const response = await fetch(`${this.baseURL}/health`);
             const data = await response.json();
-            this.displayScores(data.scores);
+            
+            if (!data.success) {
+                throw new Error('Servidor não está respondendo corretamente');
+            }
+            
+            console.log("Health check:", data);
+            return data;
+        } catch (error) {
+            throw new Error(`Não foi possível conectar ao servidor: ${error.message}`);
+        }
+    }
+
+    async apiCall(endpoint, options = {}) {
+        try {
+            console.log(`Fazendo requisição para: ${endpoint}`);
+            const response = await fetch(`${this.baseURL}${endpoint}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                },
+                ...options
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            
+            if (!data.success) {
+                throw new Error(data.error || 'Erro na requisição');
+            }
+            
+            return data;
+        } catch (error) {
+            console.error(`Erro na API call ${endpoint}:`, error);
+            throw error;
+        }
+    }
+
+    async startNewGame(category = null) {
+        if (category) {
+            this.currentCategory = category;
+        }
+        
+        const data = await this.apiCall('/game/start', {
+            method: 'POST',
+            body: JSON.stringify({ category: this.currentCategory })
+        });
+        
+        return data;
+    }
+
+    async guessLetter(letter) {
+        const data = await this.apiCall('/game/guess', {
+            method: 'POST',
+            body: JSON.stringify({ letter })
+        });
+        
+        return data;
+    }
+
+    async getHint() {
+        const data = await this.apiCall('/game/hint', {
+            method: 'POST'
+        });
+        
+        return data;
+    }
+
+    async getGameState() {
+        const data = await this.apiCall('/game/state');
+        return data;
+    }
+
+    async getCategories() {
+        try {
+            const data = await this.apiCall('/categories');
+            return data.categories || [];
+        } catch (error) {
+            console.error('Erro ao carregar categorias:', error);
+            return ['Anatomia', 'Biologia', 'Medicina', 'Programacao'];
+        }
+    }
+
+    async getScores() {
+        try {
+            const data = await this.apiCall('/scores');
+            return data.scores || [];
         } catch (error) {
             console.error('Erro ao carregar placar:', error);
+            return [];
         }
     }
-    
-    displayScores(scores) {
-        const scoresList = document.getElementById('scores-list');
-        
-        if (!scores || scores.length === 0) {
-            scoresList.innerHTML = '<p class="text-muted">Nenhuma pontuação ainda</p>';
-            return;
-        }
-        
-        scoresList.innerHTML = scores.map((score, index) => `
-            <div class="d-flex justify-content-between align-items-center p-2 border-bottom">
-                <span>${index + 1}. ${score}</span>
-            </div>
-        `).join('');
-    }
-    
-    showScores() {
-        this.loadScores();
-        const modal = new bootstrap.Modal(document.getElementById('scoresModal'));
-        modal.show();
-    }
-    
-    handlePhysicalKeyboard(event) {
-        if (event.key.length === 1 && event.key.match(/[a-z]/i)) {
-            this.makeGuess(event.key.toLowerCase());
+
+    async saveScore(name, score) {
+        try {
+            const data = await this.apiCall('/scores', {
+                method: 'POST',
+                body: JSON.stringify({ name, score })
+            });
+            return data.success;
+        } catch (error) {
+            console.error('Erro ao salvar pontuação:', error);
+            return false;
         }
     }
-    
-    updatePlayerInfo() {
-        const playerName = document.getElementById('playerName').value || 'Jogador';
-        document.getElementById('player-info').textContent = playerName;
+
+    setCategory(category) {
+        this.currentCategory = category;
+    }
+
+    getCurrentCategory() {
+        return this.currentCategory;
     }
 }
-
-// Inicializa o jogo quando a página carregar
-document.addEventListener('DOMContentLoaded', () => {
-    window.hangmanGame = new HangmanWeb();
-});
